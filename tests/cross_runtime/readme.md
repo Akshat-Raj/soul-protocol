@@ -18,6 +18,6 @@ uv run pytest tests/cross_runtime/ -v
 Optional Dependencies:
 To keep the core soul-protocol lightweight, third-party frameworks like LangChain and CrewAI are not strictly required in the default development environment. If LangChain or CrewAI is not installed then the tests will skip instead of failing.
 
-Python Version Constraints: The crewai ecosystem is currently unstable on newer Python runtimes. To protect the CI pipeline, the CrewAI integration test will automatically SKIP if executed on Python 3.13 or 3.14+.
+Python Version Constraints: The crewai ecosystem is currently unstable on newer Python runtimes.
 
 These tests will automatically run and pass in the official CI pipeline under supported environments (Python <= 3.12). To run the full suite locally without skips, ensure those specific packages are installed and you are using a compatible Python version.
