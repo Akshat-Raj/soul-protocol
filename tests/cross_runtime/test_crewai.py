@@ -15,7 +15,7 @@ async def test_crewai_integration(tmp_soul_file, tmp_path):
     source_file = tmp_soul_file
     soul = await Soul.awaken(source_file)
 
-    await soul.edit_core_memory(persona="I am a CrewAI Agent.")
+    await soul.edit_core_memory(persona="CrewAI Agent")
 
     crew_agent = Agent(
         role="Programmer",

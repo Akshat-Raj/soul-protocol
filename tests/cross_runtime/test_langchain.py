@@ -14,7 +14,7 @@ async def test_langchain_integration(tmp_soul_file, tmp_path):
     source_file = tmp_soul_file
     soul = await Soul.awaken(source_file)
 
-    await soul.edit_core_memory(persona="I am a LangChain Agent.")
+    await soul.edit_core_memory(persona="LangChain Agent")
     langchain_message = SystemMessage(content=soul.to_system_prompt())
 
     assert "LangChain Agent" in langchain_message.content
