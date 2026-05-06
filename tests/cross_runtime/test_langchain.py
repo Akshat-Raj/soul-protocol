@@ -2,7 +2,9 @@ import pytest
 
 from soul_protocol import Soul
 
-pytest.importorskip("langchain")
+pytest.importorskip(
+    "langchain_core", reason="LangChain is not installed, skipping integration test."
+)
 from langchain_core.messages import SystemMessage
 
 

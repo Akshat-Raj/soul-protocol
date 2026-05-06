@@ -1,5 +1,7 @@
 import pytest
-from soul_protocol import Soul, Interaction
+
+from soul_protocol import Interaction, Soul
+
 
 @pytest.mark.cross_runtime
 @pytest.mark.asyncio
@@ -16,11 +18,11 @@ async def test_pocketpaw_integration(tmp_soul_file, tmp_path):
     number_of_interactions = len(soul.state.recent_interactions)
 
     # episodic memory
-    await soul.observe(Interaction(
-        user_input="Hello PocketPaw!",
-        agent_output="Hello User!",
-        channel="test_channel"
-    ))
+    await soul.observe(
+        Interaction(
+            user_input="Hello PocketPaw!", agent_output="Hello User!", channel="test_channel"
+        )
+    )
 
     exported_file = str(tmp_path / "pocketpaw_exported.soul")
     await soul.export(exported_file)
@@ -32,4 +34,6 @@ async def test_pocketpaw_integration(tmp_soul_file, tmp_path):
     semantic_facts = [entry.content for entry in recovered_soul._memory._semantic.facts()]
     assert any("semantic" in fact for fact in semantic_facts), "Semantic memory failed to persist."
 
-    assert len(recovered_soul.state.recent_interactions) == number_of_interactions+1, "Episodic history failed to persist."
+    assert len(recovered_soul.state.recent_interactions) == number_of_interactions + 1, (
+        "Episodic history failed to persist."
+    )
