@@ -152,7 +152,7 @@ from .memory.manager import MemoryManager
 from .memory.strategy import SearchStrategy
 from .skills import Skill, SkillRegistry
 from .state.manager import StateManager
-from .trust.manager import TrustChainManager
+from .trust.manager import TrustChainManager, VerificationResult, VerificationState
 from .types import (
     DNA,
     Biorhythms,
@@ -578,7 +578,7 @@ class Soul:
         """
         return self._trust_chain_manager
 
-    def verify_chain(self) -> tuple[bool, str | None]:
+    def verify_chain(self) -> VerificationResult:
         """Verify the integrity of this soul's trust chain.
 
         Two-stage check:
@@ -592,8 +592,8 @@ class Soul:
         (e.g. a freshly-birthed soul before its first save). It is the
         load-time path — saved/awakened souls always have a public key.
 
-        Returns ``(True, None)`` on success, or
-        ``(False, "<reason> at seq N")`` on the first failure.
+        Returns a structured VerificationResult covering the passed, warned,
+        and failed states with a reason field.
         """
         import base64
 
@@ -602,7 +602,11 @@ class Soul:
             expected_pk = base64.b64encode(pub_bytes).decode("ascii")
             for entry in self._trust_chain_manager.chain.entries:
                 if entry.public_key != expected_pk:
-                    return False, f"public key mismatch at seq {entry.seq}"
+                    return VerificationResult(
+                        status=VerificationState.FAILED,
+                        reason=f"public key mismatch at seq {entry.seq}",
+                        signer=entry.public_key,
+                    )
         return self._trust_chain_manager.verify()
 
     def audit_log(
@@ -873,6 +877,7 @@ class Soul:
         search_strategy: SearchStrategy | None = None,
         password: str | None = None,
         eternal: EternalStorageManager | None = None,
+        allow_unverified: bool = False,
     ) -> Soul:
         """Awaken a Soul from a .soul file, directory, soul.json, soul.yaml, or soul.md.
 
@@ -888,6 +893,7 @@ class Soul:
             SoulDecryptionError,
             SoulEncryptedError,
             SoulFileNotFoundError,
+            SoulTrustError,
         )
 
         memory_data: dict = {}
@@ -970,6 +976,23 @@ class Soul:
         # Done after MemoryManager swap so any future reactive logic that
         # depends on memory state runs on the final manager.
         soul._restore_trust_chain(memory_data)
+
+        verification_result = soul.verify_chain()
+
+        if verification_result.status == VerificationState.FAILED:
+            if allow_unverified:
+                logger.warning(
+                    f"Awakening unverified soul. Signer: {verification_result.signer}, "
+                    f"Reason: {verification_result.reason}"
+                )
+            else:
+                logger.error("Soul import refused due to trust chain failure.")
+                raise SoulTrustError(
+                    f"Refusing to awaken soul: {verification_result.reason}. "
+                    "Use --allow-unverified to override."
+                )
+        elif verification_result.status == VerificationState.WARNED:
+            logger.warning(f"Trust chain warning: {verification_result.reason}")
 
         # F4 — Wire eternal storage
         soul._eternal = eternal

@@ -11,7 +11,9 @@
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from datetime import UTC, datetime
+from enum import Enum
 from typing import Any
 
 from soul_protocol.spec.trust import (
@@ -24,6 +26,36 @@ from soul_protocol.spec.trust import (
     compute_payload_hash,
     verify_chain,
 )
+
+
+class VerificationState(Enum):
+    PASSED = "passed"
+    WARNED = "warned"
+    FAILED = "failed"
+
+
+@dataclass
+class VerificationResult:
+    status: VerificationState
+    reason: str
+    signer: str | None = None
+
+    def __iter__(self):
+        passed = self.status == VerificationState.PASSED
+        yield passed
+        yield self.reason if not passed else None
+
+    def __eq__(self, other):
+        if isinstance(other, tuple):
+            return tuple(self) == other
+        if isinstance(other, VerificationResult):
+            return (self.status, self.reason, self.signer) == (
+                other.status,
+                other.reason,
+                other.signer,
+            )
+        return False
+
 
 logger = logging.getLogger(__name__)
 
@@ -142,9 +174,32 @@ class TrustChainManager:
             return list(self.chain.entries)
         return [e for e in self.chain.entries if e.action.startswith(action_prefix)]
 
-    def verify(self) -> tuple[bool, str | None]:
-        """Run :func:`verify_chain` over this manager's chain."""
-        return verify_chain(self.chain)
+    def verify(self) -> VerificationResult:
+        """Run :func:`verify_chain` over this manager's chain and return a structured result."""
+
+        if not self.chain:
+            return VerificationResult(
+                status=VerificationState.FAILED,
+                reason="Trust chain is completely absent.",
+                signer=None,
+            )
+
+        latest_signer = self.chain.entries[-1].public_key if self.chain.entries else None
+
+        is_valid, error_msg = verify_chain(self.chain)
+
+        if not is_valid:
+            return VerificationResult(
+                status=VerificationState.FAILED,
+                reason=error_msg or "Trust chain signatures failed verification.",
+                signer=latest_signer,
+            )
+
+        return VerificationResult(
+            status=VerificationState.PASSED,
+            reason="Trust chain verified successfully.",
+            signer=latest_signer,
+        )
 
     def integrity(self) -> dict:
         """Return a summary :func:`chain_integrity_check` dict."""

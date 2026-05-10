@@ -105,3 +105,12 @@ class DomainAccessError(SoulProtocolError):
             f"({', '.join(repr(a) for a in self.allowed) or 'none'}). "
             "DomainIsolationMiddleware blocks writes to disallowed domains."
         )
+
+
+class SoulTrustError(SoulProtocolError):
+    """Raised when a trust chain verification fails during soul operations."""
+
+    def __init__(self, reason: str, signer: str | None = None):
+        self.reason = reason
+        self.signer = signer
+        super().__init__(f"Trust chain validation failed: {reason}")

@@ -3146,7 +3146,7 @@ def verify_cmd(path, as_json):
         from soul_protocol.runtime.soul import Soul
         from soul_protocol.spec.trust import chain_integrity_check
 
-        soul = await Soul.awaken(path)
+        soul = await Soul.awaken(path, allow_unverified=True)
         summary = chain_integrity_check(soul.trust_chain)
 
         # Compute time span (first → last entry)
@@ -3221,7 +3221,7 @@ def audit_cmd(path, action_prefix, limit, as_json):
     async def _audit():
         from soul_protocol.runtime.soul import Soul
 
-        soul = await Soul.awaken(path)
+        soul = await Soul.awaken(path, allow_unverified=True)
         log = soul.audit_log(action_prefix=action_prefix, limit=limit)
 
         if as_json:
