@@ -92,7 +92,6 @@ def test_rerun_without_force_refuses(tmp_path: Path) -> None:
         second.output + (second.stderr if hasattr(second, "stderr") else "")
     )
 
-
 def test_rerun_with_force_overwrites(tmp_path: Path) -> None:
     runner = CliRunner()
     data_dir = tmp_path / "org"

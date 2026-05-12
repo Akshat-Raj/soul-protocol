@@ -41,9 +41,9 @@ class VerificationResult:
     signer: str | None = None
 
     def __iter__(self):
-        passed = self.status == VerificationState.PASSED
+        passed = self.status != VerificationState.FAILED
         yield passed
-        yield self.reason if not passed else None
+        yield self.reason if self.status != VerificationState.PASSED else None
 
     def __eq__(self, other):
         if isinstance(other, tuple):
@@ -177,14 +177,14 @@ class TrustChainManager:
     def verify(self) -> VerificationResult:
         """Run :func:`verify_chain` over this manager's chain and return a structured result."""
 
-        if not self.chain:
+        if not self.chain.entries:
             return VerificationResult(
-                status=VerificationState.FAILED,
-                reason="Trust chain is completely absent.",
+                status=VerificationState.WARNED,
+                reason="Trust chain is completely absent or empty.",
                 signer=None,
             )
 
-        latest_signer = self.chain.entries[-1].public_key if self.chain.entries else None
+        latest_signer = self.chain.entries[-1].actor_did if self.chain.entries else None
 
         is_valid, error_msg = verify_chain(self.chain)
 

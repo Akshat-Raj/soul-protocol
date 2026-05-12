@@ -982,14 +982,15 @@ class Soul:
         if verification_result.status == VerificationState.FAILED:
             if allow_unverified:
                 logger.warning(
-                    f"Awakening unverified soul. Signer: {verification_result.signer}, "
-                    f"Reason: {verification_result.reason}"
+                    "Awakening unverified soul. Signer: %s, Reason: %s",
+                    verification_result.signer,
+                    verification_result.reason,
                 )
             else:
                 logger.error("Soul import refused due to trust chain failure.")
                 raise SoulTrustError(
                     f"Refusing to awaken soul: {verification_result.reason}. "
-                    "Use --allow-unverified to override."
+                    "Pass allow_unverified=True to override."
                 )
         elif verification_result.status == VerificationState.WARNED:
             logger.warning(f"Trust chain warning: {verification_result.reason}")

@@ -8,6 +8,7 @@ from __future__ import annotations
 import pytest
 
 from soul_protocol.runtime.soul import Soul
+from soul_protocol.runtime.trust.manager import VerificationState
 from soul_protocol.runtime.types import Interaction
 
 
@@ -15,7 +16,9 @@ from soul_protocol.runtime.types import Interaction
 async def test_soul_birth_creates_empty_chain():
     soul = await Soul.birth("TestSoul")
     assert soul.trust_chain.length == 0
-    assert soul.verify_chain() == (True, None)
+    result = soul.verify_chain()
+    assert result.status == VerificationState.WARNED
+    assert "empty" in result.reason.lower()
 
 
 @pytest.mark.asyncio
