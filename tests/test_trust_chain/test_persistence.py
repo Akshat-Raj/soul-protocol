@@ -118,6 +118,6 @@ async def test_legacy_archive_without_chain_still_loads(tmp_path: Path):
                 continue
             dst.writestr(item, src.read(item.filename))
 
-    soul2 = await Soul.awaken(stripped)
+    soul2 = await Soul.awaken(stripped, allow_unverified=True)
     assert soul2.trust_chain.length == 0
-    assert soul2.verify_chain().status == VerificationState.WARNED
+    assert soul2.verify_chain().status == VerificationState.FAILED

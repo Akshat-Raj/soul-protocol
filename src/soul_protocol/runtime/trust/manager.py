@@ -179,7 +179,7 @@ class TrustChainManager:
 
         if not self.chain.entries:
             return VerificationResult(
-                status=VerificationState.WARNED,
+                status=VerificationState.FAILED,
                 reason="Trust chain is completely absent or empty.",
                 signer=None,
             )

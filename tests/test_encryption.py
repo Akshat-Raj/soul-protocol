@@ -290,7 +290,7 @@ class TestSoulEncryptionIntegration:
 
         data = await pack_soul(soul.serialize(), password="bytes-pw")
 
-        restored = await Soul.awaken(data, password="bytes-pw")
+        restored = await Soul.awaken(data, password="bytes-pw", allow_unverified=True)
         assert restored.name == "Echo"
 
     async def test_export_without_password_backward_compat(self, tmp_path):

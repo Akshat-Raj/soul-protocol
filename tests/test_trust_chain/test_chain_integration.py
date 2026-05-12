@@ -13,12 +13,12 @@ from soul_protocol.runtime.types import Interaction
 
 
 @pytest.mark.asyncio
-async def test_soul_birth_creates_empty_chain():
+async def test_soul_birth_creates_initial_chain():
     soul = await Soul.birth("TestSoul")
-    assert soul.trust_chain.length == 0
+    assert soul.trust_chain.length == 1
+    assert soul.trust_chain.entries[0].action == "lifecycle.birth"
     result = soul.verify_chain()
-    assert result.status == VerificationState.WARNED
-    assert "empty" in result.reason.lower()
+    assert result.status == VerificationState.PASSED
 
 
 @pytest.mark.asyncio

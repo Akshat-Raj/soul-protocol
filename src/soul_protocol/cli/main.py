@@ -3130,7 +3130,10 @@ def repair_cmd(
 @cli.command("verify")
 @click.argument("path", type=click.Path(exists=True))
 @click.option("--json", "as_json", is_flag=True, default=False, help="Emit machine-readable JSON.")
-def verify_cmd(path, as_json):
+@click.option(
+    "--allow-unverified", is_flag=True, default=False, help="Bypass strict validation during load."
+)
+def verify_cmd(path, as_json, allow_unverified):
     """Verify the trust chain of a .soul file or directory.
 
     \b
@@ -3146,7 +3149,7 @@ def verify_cmd(path, as_json):
         from soul_protocol.runtime.soul import Soul
         from soul_protocol.spec.trust import chain_integrity_check
 
-        soul = await Soul.awaken(path, allow_unverified=True)
+        soul = await Soul.awaken(path, allow_unverified=allow_unverified)
         summary = chain_integrity_check(soul.trust_chain)
 
         # Compute time span (first → last entry)
@@ -3207,7 +3210,10 @@ def verify_cmd(path, as_json):
 )
 @click.option("--limit", type=int, default=None, help="Show only the most recent N entries.")
 @click.option("--json", "as_json", is_flag=True, default=False, help="Emit machine-readable JSON.")
-def audit_cmd(path, action_prefix, limit, as_json):
+@click.option(
+    "--allow-unverified", is_flag=True, default=False, help="Bypass strict validation during load."
+)
+def audit_cmd(path, action_prefix, limit, as_json, allow_unverified):
     """Print a human-readable timeline of signed actions.
 
     \b
@@ -3221,7 +3227,7 @@ def audit_cmd(path, action_prefix, limit, as_json):
     async def _audit():
         from soul_protocol.runtime.soul import Soul
 
-        soul = await Soul.awaken(path, allow_unverified=True)
+        soul = await Soul.awaken(path, allow_unverified=allow_unverified)
         log = soul.audit_log(action_prefix=action_prefix, limit=limit)
 
         if as_json:

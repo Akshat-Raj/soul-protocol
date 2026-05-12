@@ -605,7 +605,7 @@ class Soul:
                     return VerificationResult(
                         status=VerificationState.FAILED,
                         reason=f"public key mismatch at seq {entry.seq}",
-                        signer=entry.public_key,
+                        signer=getattr(entry, "actor_did", None),
                     )
         return self._trust_chain_manager.verify()
 
@@ -746,6 +746,14 @@ class Soul:
             human="",
         )
 
+        soul._safe_append_chain(
+            "lifecycle.birth",
+            {
+                "name": name,
+                "role": role,
+            },
+        )
+
         # F4 — Wire eternal storage
         soul._eternal = eternal
 
@@ -867,6 +875,16 @@ class Soul:
             old_soul.did,
             identity.did,
         )
+
+        soul._safe_append_chain(
+            "lifecycle.reincarnate",
+            {
+                "name": new_name,
+                "previous_did": old_soul.did,
+                "incarnation": identity.incarnation,
+            },
+        )
+
         return soul
 
     @classmethod
@@ -990,10 +1008,11 @@ class Soul:
                 logger.error("Soul import refused due to trust chain failure.")
                 raise SoulTrustError(
                     f"Refusing to awaken soul: {verification_result.reason}. "
-                    "Pass allow_unverified=True to override."
+                    "Pass allow_unverified=True to override.",
+                    signer=verification_result.signer,
                 )
         elif verification_result.status == VerificationState.WARNED:
-            logger.warning(f"Trust chain warning: {verification_result.reason}")
+            logger.warning("Trust chain warning: %s", verification_result.reason)
 
         # F4 — Wire eternal storage
         soul._eternal = eternal

@@ -127,7 +127,7 @@ async def test_full_legacy_awaken_round_trip(tmp_path: Path):
     soul_path = tmp_path / "legacy.soul"
     soul_path.write_bytes(archive)
 
-    soul = await Soul.awaken(soul_path)
+    soul = await Soul.awaken(soul_path, allow_unverified=True)
     facts = soul._memory._semantic.facts()
     assert any(f.content == "User likes Python" for f in facts)
     assert any(f.content == "User uses macOS" for f in facts)

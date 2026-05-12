@@ -62,7 +62,7 @@ def test_soul_verify_tampered_chain_returns_one(tmp_path):
         chain_file.write_text(json.dumps(data, indent=2))
 
     runner = CliRunner()
-    result = runner.invoke(cli, ["verify", str(soul_dir)])
+    result = runner.invoke(cli, ["verify", str(soul_dir), "--allow-unverified"])
     assert result.exit_code == 1
     assert "failed" in result.output.lower() or "✗" in result.output
 
