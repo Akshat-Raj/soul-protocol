@@ -2,9 +2,7 @@ import pytest
 
 from soul_protocol import Soul
 
-pytest.importorskip(
-    "crewai", reason="CrewAI is not installed, skipping integration test."
-)
+pytest.importorskip("crewai", reason="CrewAI is not installed, skipping integration test.")
 from crewai import Agent
 
 
@@ -34,7 +32,8 @@ async def test_crewai_integration(tmp_soul_file, tmp_path):
 
     recovered_soul = await Soul.awaken(destination_file)
     assert "CrewAI Agent" in recovered_soul.to_system_prompt()
-    
-    memories = await recovered_soul.recall("favorite framework")
-    assert any("favorite framework is CrewAI" in m.content for m in memories), "Semantic memory failed to persist"
 
+    memories = await recovered_soul.recall("favorite framework")
+    assert any("favorite framework is CrewAI" in m.content for m in memories), (
+        "Semantic memory failed to persist"
+    )
